@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JARVIS — Instalador e atualização</title>
+  <meta name="description" content="Jarvis: assistente local. Instalação e atualização com chave — código-fonte não é público." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="top">
+    <div class="brand">JARVIS</div>
+    <p class="tag">Assistente local · instalação e atualização protegidas</p>
+    <nav class="nav">
+      <a href="#descricao">Descrição</a>
+      <a href="#especificacoes">Especificações</a>
+      <a href="#acesso">Acesso</a>
+      <a href="#passo-a-passo">Passo a passo</a>
+      <a href="#atualizar">Atualizar</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero panel" id="acesso">
+      <h1>Acesso ao instalador</h1>
+      <p class="lead">
+        O <strong>código-fonte não fica público</strong>. Download e atualização usam uma
+        <strong>chave</strong> que só quem autorizou recebe. O site e as releases ficam no GitHub —
+        o PC do dono pode estar desligado.
+      </p>
+      <div id="gate" class="gate">
+        <label>Chave do site
+          <input id="siteKey" type="password" placeholder="digite a chave" autocomplete="off" />
+        </label>
+        <button type="button" id="btnUnlock" class="btn primary">Desbloquear</button>
+        <p id="gateMsg" class="hint">Sem a chave, só a descrição pública aparece.</p>
+      </div>
+      <div id="unlocked" class="unlocked" hidden>
+        <p class="ok">Acesso liberado neste navegador.</p>
+        <div class="cta">
+          <a class="btn primary" href="#passo-a-passo">Ver instalação</a>
+          <a class="btn" href="#atualizar">Como atualizar</a>
+        </div>
+        <p class="hint">
+          O ZIP completo só sai do repositório <em>privado</em>, com a chave de atualização no app
+          (ou convite GitHub do dono). Este site <strong>não</strong> publica o código.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel" id="descricao">
+      <h2>Descrição</h2>
+      <p>
+        O <strong>Jarvis</strong> é um assistente pessoal 100% local: HUD cinematográfica, voz em português,
+        IA via Ollama e <strong>análise de sites</strong> (cadastra a URL e a IA resume o negócio).
+      </p>
+      <ul class="bullets">
+        <li>Roda só naquele PC/Mac — não usa o computador de outra pessoa como servidor.</li>
+        <li>Área Sites: adicionar → analisar com IA → ver resumo (público, contato, destaques).</li>
+        <li>Atualização pelo próprio app (com chave), sem precisar do PC do autor ligado.</li>
+      </ul>
+    </section>
+
+    <section class="panel" id="especificacoes">
+      <h2>Especificações</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Mínimo</th><th>Recomendado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Sistema</td><td>Windows 10/11 ou macOS 12+</td><td>Windows 11 / Apple Silicon</td></tr>
+            <tr><td>Python</td><td>3.11</td><td>3.12+</td></tr>
+            <tr><td>Node.js</td><td>LTS 18+</td><td>LTS atual</td></tr>
+            <tr><td>IA</td><td>qwen2.5:3b</td><td>qwen3:4b</td></tr>
+            <tr><td>RAM</td><td>8 GB</td><td>16 GB</td></tr>
+            <tr><td>Código</td><td colspan="2">Repositório privado — sem ZIP público do fonte</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel locked-only" id="passo-a-passo" data-needs-key>
+      <h2>Passo a passo (Mac)</h2>
+      <ol class="steps-list">
+        <li>Instale Python 3.11+, Node.js LTS e Ollama; rode <code>ollama pull qwen3:4b</code>.</li>
+        <li>Receba a pasta/ZIP do Jarvis <strong>direto do dono</strong> (pendrive ou release privada) — não há download anônimo do código.</li>
+        <li>No Terminal, na pasta: <code>chmod +x iniciar.sh && ./iniciar.sh</code></li>
+        <li>HUD → Sites: nome + URL → Adicionar → <strong>Analisar com IA</strong>.</li>
+        <li>Sistema → cole a <strong>chave de atualização</strong> → Salvar → Atualizar Jarvis quando houver versão nova.</li>
+      </ol>
+      <h3>Windows</h3>
+      <ol class="steps-list">
+        <li>Python (PATH) + Node LTS + Ollama (<code>ollama pull qwen3:4b</code>).</li>
+        <li>Receba o pacote do dono → <code>instalar.bat</code> → <code>iniciar.bat</code>.</li>
+        <li>Mesma aba Sites / Análise e Sistema → chave → Atualizar.</li>
+      </ol>
+    </section>
+
+    <section class="panel locked-only" id="atualizar" data-needs-key>
+      <h2>Atualizar sem o outro PC</h2>
+      <ol class="steps-list">
+        <li>O dono publica uma release no GitHub (privado) e te passa a <strong>chave de atualização</strong> (token só de leitura).</li>
+        <li>No Jarvis: <strong>Configurações → Sistema</strong> → colar chave → Salvar.</li>
+        <li>Clique em <strong>Atualizar Jarvis</strong>. O app baixa o ZIP da release, atualiza os arquivos e preserva seus dados/sites.</li>
+        <li>Reinicie com <code>./iniciar.sh</code> ou <code>iniciar.bat</code>.</li>
+      </ol>
+      <p class="note">
+        Sem a chave, ninguém baixa o pacote. O site público não hospeda o código-fonte.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>JARVIS · local · código privado · site só para guia e atualização autorizada</p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
