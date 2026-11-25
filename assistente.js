@@ -24,7 +24,7 @@
     {
       keys: ["como instalar", "instalar", "instalacao", "instalação", "passo a passo", "comeco", "começo", "download", "baixar"],
       reply:
-        "Instalar pelo site: 1) chave do site (`jarvis-acesso`) → Desbloquear; 2) chave de instalação (token GitHub do dono); 3) Baixar pacote agora ou Instalador automático; 4) Python + Node + Ollama + `ollama pull qwen3:4b`; 5) Windows: `instalar.bat` → `iniciar.bat` · Mac: `./iniciar.sh`.",
+        "Instalar pelo site: 1) cole a chave de instalação (token GitHub do dono); 2) Baixar pacote agora ou Instalador automático; 3) Python + Node + Ollama + `ollama pull qwen3:4b`; 4) Windows: `instalar.bat` → `iniciar.bat` · Mac: `./iniciar.sh`.",
     },
     {
       keys: ["zip", "baixar zip", "download zip", "arquivo zip", "extrair zip", "pacote", "instalador automatico", "instalador automático"],
@@ -34,12 +34,12 @@
     {
       keys: ["chave instalacao", "chave instalação", "token github", "ghp", "github_pat", "chave de atualizacao", "chave de atualização"],
       reply:
-        "Há duas chaves: (1) Chave do site `jarvis-acesso` — só libera esta página. (2) Chave de instalação/atualização — token GitHub com leitura no repo privado; usa no download aqui e depois em Configurações → Sistema → Atualizar Jarvis.",
+        "A chave de instalação é o token GitHub (leitura no repo privado) que o dono te envia. Cole em Download para baixar o pacote. A mesma chave serve em Configurações → Sistema → Atualizar Jarvis no app.",
     },
     {
-      keys: ["chave", "token", "acesso", "senha do site", "desbloquear", "jarvis-acesso"],
+      keys: ["chave", "token", "acesso"],
       reply:
-        "Chave do site: `jarvis-acesso` (desbloqueia o instalador). Chave de instalação: token GitHub que o dono te envia (baixa o pacote privado e atualiza o app). Sem a segunda chave o site não consegue baixar o projeto.",
+        "Use a chave de instalação (token GitHub do dono) no campo Download. Sem ela o site não baixa o pacote privado. No app, a mesma chave atualiza o Jarvis.",
     },
     {
       keys: ["windows", "win10", "win11"],

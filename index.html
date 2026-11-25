@@ -28,26 +28,16 @@
     <section class="hero panel" id="acesso">
       <h1>Instalar o Jarvis</h1>
       <p class="lead">
-        Este site <strong>é o instalador</strong>: com a chave você baixa o pacote do seu sistema
-        e coloca o projeto no PC. O código-fonte continua privado no GitHub.
+        Este site <strong>é o instalador</strong>: com a chave de instalação (token GitHub)
+        você baixa o pacote e coloca o projeto no PC. O código-fonte continua privado.
       </p>
-      <div id="gate" class="gate">
-        <label>Chave do site
-          <input id="siteKey" type="password" placeholder="digite a chave" autocomplete="off" />
-        </label>
-        <button type="button" id="btnUnlock" class="btn primary">Desbloquear instalador</button>
-        <p id="gateMsg" class="hint">Sem a chave, o download fica bloqueado.</p>
-      </div>
-      <div id="unlocked" class="unlocked" hidden>
-        <p class="ok">Instalador liberado.</p>
-        <div class="cta">
-          <a class="btn primary" href="#instalar">Ir para download</a>
-          <button type="button" class="btn" id="btnOpenAssist">Assistente</button>
-        </div>
+      <div class="cta">
+        <a class="btn primary" href="#instalar">Ir para download</a>
+        <button type="button" class="btn" id="btnOpenAssist">Assistente</button>
       </div>
     </section>
 
-    <section class="panel locked-only" id="instalar" data-needs-key>
+    <section class="panel" id="instalar">
       <h2>Download</h2>
       <p id="installOs" class="intro-steps">Detectando sistema…</p>
       <p>
@@ -87,7 +77,7 @@
       </ul>
     </section>
 
-    <section class="panel locked-only" id="depois" data-needs-key>
+    <section class="panel" id="depois">
       <h2>Depois do download</h2>
 
       <article class="step-block" id="passo-windows">
@@ -112,7 +102,7 @@ chmod +x iniciar.sh
       </article>
     </section>
 
-    <section class="panel locked-only" id="atualizar" data-needs-key>
+    <section class="panel" id="atualizar">
       <h2>Atualizar depois</h2>
       <p class="intro-steps">Com o Jarvis já instalado, use a mesma chave em Configurações → Sistema → Atualizar Jarvis.</p>
       <ol class="steps-list">
@@ -149,7 +139,7 @@ chmod +x iniciar.sh
   </main>
 
   <footer>
-    <p>JARVIS · instalar pelo site com chave · código privado</p>
+    <p>JARVIS · instalar pelo site · código privado</p>
   </footer>
 
   <div id="assistRoot"></div>

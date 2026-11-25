@@ -291,19 +291,9 @@ footer {
   font-size: 0.8rem;
 }
 
-.gate label, .unlocked { display: block; }
-.gate input {
-  display: block;
-  width: 100%;
-  margin: 0.35rem 0 0.75rem;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid rgba(42, 240, 255, 0.3);
-  background: rgba(0, 0, 0, 0.35);
-  color: #e8fbff;
-  font: inherit;
-}
 .ok { color: var(--cyan2) !important; }
 .bad { color: #ff8f7a !important; }
+.hero .cta { margin-top: 0.5rem; }
 .field {
   display: block;
   text-align: left;
@@ -340,20 +330,6 @@ footer {
   transition: width 0.2s ease;
 }
 .progress .lab { margin-top: 0.35rem; }
-[data-needs-key]:not(.is-open) {
-  filter: blur(4px);
-  pointer-events: none;
-  user-select: none;
-  opacity: 0.55;
-}
-[data-needs-key]:not(.is-open)::after {
-  content: "Desbloqueie com a chave do site para ver instalação e atualização.";
-  display: block;
-  margin-top: 0.75rem;
-  color: var(--muted);
-  filter: none;
-  font-size: 0.9rem;
-}
 
 .callout {
   text-align: left;
