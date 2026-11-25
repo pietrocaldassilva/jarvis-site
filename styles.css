@@ -166,14 +166,65 @@ main {
   margin: 0;
 }
 
-.bullets, .steps-list {
+.bullets, .steps-list, .mini {
   margin: 0.4rem 0 0.8rem;
   padding-left: 1.2rem;
   color: #c9f6ff;
   line-height: 1.55;
 }
-.bullets li, .steps-list li { margin-bottom: 0.45rem; }
+.bullets li, .steps-list li, .mini li { margin-bottom: 0.45rem; }
 .steps-list strong { color: var(--cyan2); }
+.intro-steps {
+  color: var(--muted) !important;
+  margin-bottom: 1rem !important;
+}
+.os-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 0 1.25rem;
+}
+.step-block {
+  margin: 0 0 1.75rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(42, 240, 255, 0.12);
+}
+.step-block:first-of-type { border-top: none; }
+.step {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: 0.85rem;
+  margin: 1rem 0 1.15rem;
+  align-items: start;
+}
+.step .n {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid rgba(42, 240, 255, 0.45);
+  color: var(--cyan);
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(42, 240, 255, 0.08);
+}
+.step h4 {
+  margin: 0.15rem 0 0.45rem;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cyan2);
+  font-weight: 600;
+}
+.step ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  color: #c9f6ff;
+  line-height: 1.5;
+}
+.step ul li { margin-bottom: 0.35rem; }
 a { color: var(--cyan2); }
 code, pre {
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
