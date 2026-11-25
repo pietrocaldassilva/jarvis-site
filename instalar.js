@@ -8,6 +8,7 @@
   const btnDl = document.getElementById("btnDownloadPacote");
   const btnScript = document.getElementById("btnDownloadScript");
   const btnSaveTok = document.getElementById("btnSaveInstallToken");
+  const btnTest = document.getElementById("btnTestToken");
   const progressEl = document.getElementById("installProgress");
 
   if (!btnDl || !tokenEl) return;
@@ -45,8 +46,12 @@
   const saved = sessionStorage.getItem(TOKEN_KEY);
   if (saved) tokenEl.value = saved;
 
+  function tokenAtual() {
+    return (tokenEl.value || "").trim();
+  }
+
   btnSaveTok?.addEventListener("click", () => {
-    const t = tokenEl.value.trim();
+    const t = tokenAtual();
     if (!t) {
       setMsg("Cole a chave de instalação (token GitHub).", false);
       return;
@@ -55,19 +60,34 @@
     setMsg("Chave salva só neste navegador (sessão).", true);
   });
 
-  async function apiJson(path, token) {
-    const r = await fetch(`https://api.github.com${path}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    });
+  async function apiFetch(path, token, accept) {
+    let r;
+    try {
+      r = await fetch(`https://api.github.com${path}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: accept || "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      });
+    } catch (e) {
+      const err = new Error("rede/CORS");
+      err.status = 0;
+      throw err;
+    }
     if (!r.ok) {
       const err = new Error(`GitHub HTTP ${r.status}`);
       err.status = r.status;
+      try {
+        err.body = await r.json();
+      } catch (_) {}
       throw err;
     }
+    return r;
+  }
+
+  async function apiJson(path, token) {
+    const r = await apiFetch(path, token);
     return r.json();
   }
 
@@ -88,8 +108,50 @@
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
 
+  function msgErroGithub(e) {
+    const st = e && e.status;
+    if (st === 401) {
+      return "Token inválido ou expirado. Gere outro no GitHub → Settings → Developer settings → Tokens.";
+    }
+    if (st === 403) {
+      return "Token sem permissão. No fine-grained: repo jarvis + Contents: Read (e acesso a Releases).";
+    }
+    if (st === 404) {
+      return (
+        "GitHub respondeu «não encontrado». Quase sempre é token sem acesso ao repo privado. " +
+        "Fine-grained: Resource owner = você, Repository = pietrocaldassilva/jarvis, " +
+        "Permissions → Contents: Read. Depois use «Instalador automático»."
+      );
+    }
+    if (st === 0) {
+      return "O navegador bloqueou a API do GitHub. Use «Instalador automático» (recomendado).";
+    }
+    return "Falha no GitHub. Use «Instalador automático» — ele baixa pelo PowerShell/Terminal sem CORS.";
+  }
+
+  async function testarChave() {
+    const token = tokenAtual();
+    if (!token) {
+      setMsg("Cole o token primeiro.", false);
+      return;
+    }
+    sessionStorage.setItem(TOKEN_KEY, token);
+    setMsg("Testando token no GitHub…");
+    try {
+      const repo = await apiJson(`/repos/${REPO}`, token);
+      const rel = await apiJson(`/repos/${REPO}/releases/latest`, token);
+      const n = (rel.assets || []).length;
+      setMsg(
+        `OK: acesso a ${repo.full_name}. Release ${rel.tag_name} com ${n} arquivo(s). Pode baixar o instalador automático.`,
+        true
+      );
+    } catch (e) {
+      setMsg(msgErroGithub(e), false);
+    }
+  }
+
   async function baixarPacote() {
-    const token = tokenEl.value.trim();
+    const token = tokenAtual();
     if (!token) {
       setMsg("Cole a chave de instalação que o dono te passou.", false);
       return;
@@ -108,14 +170,22 @@
       }
 
       setProgress(15, `Baixando ${asset.name}…`);
-      const fileRes = await fetch(asset.url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/octet-stream",
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-        redirect: "follow",
-      });
+      // API asset (não browser_download_url) — privado exige header.
+      let fileRes;
+      try {
+        fileRes = await fetch(asset.url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/octet-stream",
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+          redirect: "follow",
+        });
+      } catch (_) {
+        const err = new Error("cors-asset");
+        err.status = 0;
+        throw err;
+      }
       if (!fileRes.ok) {
         const err = new Error(`Download HTTP ${fileRes.status}`);
         err.status = fileRes.status;
@@ -145,6 +215,13 @@
         setProgress(90, "Finalizando…");
       }
 
+      // ZIP vazio/HTML de erro
+      if (blob.size < 1000) {
+        const err = new Error("arquivo pequeno");
+        err.status = 0;
+        throw err;
+      }
+
       saveBlob(blob, asset.name || (plat() === "mac" ? "Jarvis-Mac.zip" : "Jarvis-Windows.zip"));
       setProgress(100, "Concluído");
       setMsg(
@@ -154,18 +231,11 @@
         true
       );
     } catch (e) {
-      const st = e && e.status;
-      if (st === 401 || st === 403) {
-        setMsg("Chave inválida ou sem permissão no repositório privado.", false);
-      } else if (st === 404) {
-        setMsg("Release não encontrada. Peça ao dono para publicar o pacote.", false);
-      } else {
-        setMsg(
-          "O navegador bloqueou o download direto. Use «Baixar instalador automático» — ele baixa e coloca o projeto na pasta Jarvis.",
-          false
-        );
-      }
+      setMsg(msgErroGithub(e) + " Baixando o instalador automático…", false);
       setProgress(null);
+      try {
+        baixarScript(true);
+      } catch (_) {}
     } finally {
       btnDl.disabled = false;
     }
@@ -186,10 +256,14 @@ $headers = @{
   Accept = 'application/vnd.github+json'
   'X-GitHub-Api-Version' = '2022-11-28'
 }
-$rel = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/$Repo/releases/latest"
+try {
+  $rel = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/$Repo/releases/latest"
+} catch {
+  throw "Nao achei a release. Confira o token (Contents Read no repo privado jarvis). Detalhe: $_"
+}
 $asset = $rel.assets | Where-Object { $_.name -match 'Windows' -and $_.name -like '*.zip' } | Select-Object -First 1
 if (-not $asset) { $asset = $rel.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1 }
-if (-not $asset) { throw 'Nenhum pacote na release.' }
+if (-not $asset) { throw 'Nenhum pacote ZIP na release.' }
 $zip = Join-Path $Tmp 'Jarvis.zip'
 Write-Host ("Baixando " + $asset.name + "...")
 Invoke-WebRequest -Headers @{ Authorization = "Bearer $Token"; Accept = 'application/octet-stream' } -Uri $asset.url -OutFile $zip
@@ -201,8 +275,7 @@ New-Item -ItemType Directory -Force -Path $Dest | Out-Null
 Copy-Item -Path (Join-Path $src.FullName '*') -Destination $Dest -Recurse -Force
 Write-Host ''
 Write-Host ("Projeto em " + $Dest) -ForegroundColor Green
-Write-Host 'Se ainda nao tiver: Python (PATH) + Node LTS + Ollama + ollama pull qwen3:4b'
-Write-Host 'Depois: instalar.bat  e  iniciar.bat'
+Write-Host 'Depois: Python+Node+Ollama, depois instalar.bat e iniciar.bat'
 Start-Process explorer.exe $Dest
 `;
   }
@@ -216,8 +289,13 @@ REPO='${REPO}'
 DEST="$HOME/Jarvis"
 TMP="$(mktemp -d)"
 echo "=== Jarvis instalador (Mac) ==="
-curl -sL -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \\
-  "https://api.github.com/repos/$REPO/releases/latest" -o "$TMP/rel.json"
+CODE=$(curl -sL -o "$TMP/rel.json" -w "%{http_code}" -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \\
+  "https://api.github.com/repos/$REPO/releases/latest")
+if [ "$CODE" != "200" ]; then
+  echo "GitHub HTTP $CODE — token sem acesso ao repo privado ou release inexistente."
+  echo "Fine-grained: repo jarvis + Contents Read."
+  exit 1
+fi
 python3 - <<PY
 import json
 j=json.load(open("$TMP/rel.json"))
@@ -243,14 +321,13 @@ rsync -a "$SRC"/ "$DEST"/
 chmod +x "$DEST/iniciar.sh" "$DEST/iniciar.command" 2>/dev/null || true
 echo
 echo "Projeto em $DEST"
-echo "Se ainda não tiver: Python + Node + Ollama + ollama pull qwen3:4b"
-echo "Depois: cd \\"$DEST\\" && ./iniciar.sh"
+echo "Depois: Python + Node + Ollama + ./iniciar.sh"
 open "$DEST"
 `;
   }
 
-  function baixarScript() {
-    const token = tokenEl.value.trim();
+  function baixarScript(silencioso) {
+    const token = tokenAtual();
     if (!token) {
       setMsg("Cole a chave de instalação antes.", false);
       return;
@@ -258,19 +335,39 @@ open "$DEST"
     sessionStorage.setItem(TOKEN_KEY, token);
     if (plat() === "mac") {
       saveBlob(new Blob([scriptMac(token)], { type: "text/plain" }), "instalar-jarvis.command");
-      setMsg("Baixou instalar-jarvis.command — no Finder: clique com o botão direito → Abrir.", true);
+      if (!silencioso) {
+        setMsg("Baixou instalar-jarvis.command — Finder: botão direito → Abrir.", true);
+      } else {
+        setMsg(
+          "Download direto falhou no navegador (normal). Baixei instalar-jarvis.command — abra pelo Finder.",
+          true
+        );
+      }
     } else {
       const ps1 = scriptWindows(token);
-      const bat = `@echo off\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0instalar-jarvis.ps1"\r\nif errorlevel 1 pause\r\n`;
-      // um único .ps1 é suficiente; bat wrapper opcional
+      const bat =
+        "@echo off\r\n" +
+        "powershell -NoProfile -ExecutionPolicy Bypass -File \"%~dp0instalar-jarvis.ps1\"\r\n" +
+        "if errorlevel 1 pause\r\n";
       saveBlob(new Blob([ps1], { type: "text/plain" }), "instalar-jarvis.ps1");
       setTimeout(() => {
         saveBlob(new Blob([bat], { type: "application/octet-stream" }), "instalar-jarvis.bat");
       }, 400);
-      setMsg("Baixou instalar-jarvis.ps1 e .bat — rode o .bat (ou clique direito no .ps1 → Executar com PowerShell). Destino: pasta Jarvis no seu usuário.", true);
+      if (!silencioso) {
+        setMsg(
+          "Baixou instalar-jarvis.ps1 e .bat — rode o .bat. Destino: pasta Jarvis no seu usuário.",
+          true
+        );
+      } else {
+        setMsg(
+          "Download direto falhou no navegador (normal com repo privado). Baixei o instalador automático (.bat) — rode ele.",
+          true
+        );
+      }
     }
   }
 
+  btnTest?.addEventListener("click", testarChave);
   btnDl.addEventListener("click", baixarPacote);
-  btnScript?.addEventListener("click", baixarScript);
+  btnScript?.addEventListener("click", () => baixarScript(false));
 })();

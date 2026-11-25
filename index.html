@@ -41,16 +41,17 @@
       <h2>Download</h2>
       <p id="installOs" class="intro-steps">Detectando sistema…</p>
       <p>
-        Cole a <strong>chave de instalação</strong> (token GitHub que o dono te passou).
-        É ela que autoriza baixar o pacote privado.
+        Cole a <strong>chave de instalação</strong> (token GitHub). Sem acesso ao repo privado
+        o GitHub responde «não encontrado».
       </p>
       <label class="field">Chave de instalação
         <input id="installToken" type="password" placeholder="github_pat_… ou ghp_…" autocomplete="off" />
       </label>
       <div class="row-btns">
-        <button type="button" id="btnSaveInstallToken" class="btn">Salvar chave na sessão</button>
-        <button type="button" id="btnDownloadPacote" class="btn primary">Baixar pacote agora</button>
-        <button type="button" id="btnDownloadScript" class="btn">Baixar instalador automático</button>
+        <button type="button" id="btnTestToken" class="btn">Testar chave</button>
+        <button type="button" id="btnSaveInstallToken" class="btn">Salvar na sessão</button>
+        <button type="button" id="btnDownloadScript" class="btn primary">Instalador automático</button>
+        <button type="button" id="btnDownloadPacote" class="btn">Baixar ZIP no navegador</button>
       </div>
       <div id="installProgress" class="progress" hidden>
         <div class="trilha"><div class="fill"></div></div>
@@ -58,11 +59,11 @@
       </div>
       <p id="installMsg" class="hint"></p>
       <div class="callout">
-        <strong>O que cada botão faz</strong>
+        <strong>Se der «não encontrado»</strong>
         <ul class="mini">
-          <li><strong>Baixar pacote agora</strong> — baixa o ZIP do seu sistema neste navegador.</li>
-          <li><strong>Instalador automático</strong> — script que baixa, extrai e coloca em
-            <code>Jarvis</code> na sua pasta de usuário (recomendado se o download direto falhar).</li>
+          <li>Token fine-grained: repo <code>pietrocaldassilva/jarvis</code> + <strong>Contents: Read</strong>.</li>
+          <li>Ou token classic com escopo <code>repo</code> (privado).</li>
+          <li>Use <strong>Instalador automático</strong> (recomendado) — o ZIP direto no navegador costuma falhar por bloqueio do GitHub.</li>
         </ul>
       </div>
     </section>
