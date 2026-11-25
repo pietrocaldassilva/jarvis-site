@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JARVIS — Instalador e atualização</title>
-  <meta name="description" content="Jarvis: assistente local. Passo a passo de instalação e atualização com chave — código-fonte não é público." />
+  <title>JARVIS — Guia de instalação</title>
+  <meta name="description" content="Jarvis: assistente local. Instalação pela pasta do projeto (não por ZIP neste site). Guia + assistente." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -14,7 +14,7 @@
 
   <header class="top">
     <div class="brand">JARVIS</div>
-    <p class="tag">Assistente local · instalação e atualização protegidas</p>
+    <p class="tag">Assistente local · instalação pela pasta do projeto</p>
     <nav class="nav">
       <a href="#descricao">Descrição</a>
       <a href="#especificacoes">Especificações</a>
@@ -26,25 +26,36 @@
 
   <main>
     <section class="hero panel" id="acesso">
-      <h1>Acesso ao guia</h1>
+      <h1>Guia de instalação</h1>
       <p class="lead">
-        O <strong>código-fonte não fica público</strong>. Este site só mostra o guia.
-        O pacote e as atualizações saem do repositório privado, com chave autorizada.
-        O PC do dono pode estar desligado.
+        O Jarvis <strong>não se instala baixando um .zip neste site</strong>.
+        Este site é só o <strong>guia</strong> (+ assistente). O código fica no
+        repositório <strong>privado</strong>: você recebe a <strong>pasta do projeto</strong>
+        (clone ou cópia autorizada) e roda os scripts de instalação <em>dentro</em> dela.
       </p>
+      <div class="callout">
+        <strong>Como funciona</strong>
+        <ol class="mini">
+          <li>Dono libera o <strong>projeto</strong> (pasta Jarvis completa).</li>
+          <li>Você instala Python, Node e Ollama no seu PC/Mac.</li>
+          <li>Na pasta: Windows <code>instalar.bat</code> → <code>iniciar.bat</code> · Mac <code>./iniciar.sh</code>.</li>
+          <li>Atualizações depois: chave no app (não precisa do PC do dono ligado).</li>
+        </ol>
+      </div>
       <div id="gate" class="gate">
-        <label>Chave do site
+        <label>Chave do site (só destrava o guia)
           <input id="siteKey" type="password" placeholder="digite a chave" autocomplete="off" />
         </label>
         <button type="button" id="btnUnlock" class="btn primary">Desbloquear</button>
-        <p id="gateMsg" class="hint">Sem a chave, só a descrição pública aparece.</p>
+        <p id="gateMsg" class="hint">A chave do site não baixa o código. Sem ela, só a descrição pública aparece.</p>
       </div>
       <div id="unlocked" class="unlocked" hidden>
-        <p class="ok">Acesso liberado neste navegador.</p>
+        <p class="ok">Guia liberado neste navegador.</p>
         <div class="cta">
-          <a class="btn primary" href="#passo-windows">Instalar no Windows</a>
-          <a class="btn" href="#passo-mac">Instalar no Mac</a>
-          <a class="btn" href="#atualizar">Atualizar depois</a>
+          <a class="btn primary" href="#passo-windows">Windows</a>
+          <a class="btn" href="#passo-mac">Mac</a>
+          <a class="btn" href="#atualizar">Atualizar</a>
+          <button type="button" class="btn" id="btnOpenAssist">Falar com o assistente</button>
         </div>
       </div>
     </section>
@@ -53,12 +64,12 @@
       <h2>Descrição</h2>
       <p>
         O <strong>Jarvis</strong> é um assistente pessoal 100% local: HUD, voz em português,
-        IA via Ollama e <strong>análise de sites</strong> (cadastra a URL e a IA resume o negócio).
+        IA via Ollama e <strong>análise de sites</strong>.
       </p>
       <ul class="bullets">
         <li>Roda só naquele PC/Mac — não usa o computador de outra pessoa como servidor.</li>
-        <li>Área Sites: adicionar → analisar com IA → ver resumo.</li>
-        <li>Atualização pelo próprio app (com chave), sem precisar do PC do autor ligado.</li>
+        <li>Instalação = pasta do projeto + scripts (<code>instalar.bat</code> / <code>iniciar.sh</code>), não um instalador .zip público.</li>
+        <li>Área Sites: adicionar URL → analisar com IA (tudo local).</li>
       </ul>
     </section>
 
@@ -75,7 +86,7 @@
             <tr><td>Node.js</td><td>LTS 18+</td><td>LTS atual</td></tr>
             <tr><td>IA (Ollama)</td><td>qwen2.5:3b</td><td>qwen3:4b</td></tr>
             <tr><td>RAM</td><td>8 GB</td><td>16 GB</td></tr>
-            <tr><td>Internet</td><td colspan="2">Só na instalação / atualização; o uso diário é local</td></tr>
+            <tr><td>Entrega</td><td colspan="2">Pasta do projeto (repo privado) — não ZIP neste site</td></tr>
           </tbody>
         </table>
       </div>
@@ -84,8 +95,9 @@
     <section class="panel locked-only" id="passo-a-passo" data-needs-key>
       <h2>Passo a passo</h2>
       <p class="intro-steps">
-        Você precisa de duas coisas do dono: a <strong>pasta/ZIP do Jarvis</strong>
-        e a <strong>chave de atualização</strong> (depois). Este site não baixa o código.
+        Antes de tudo: peça ao dono a <strong>pasta do projeto Jarvis</strong>
+        (acesso ao repositório privado ou cópia da pasta). 
+        <strong>Não</strong> procure um .zip de instalação neste site — ele não existe aqui.
       </p>
 
       <div class="os-switch">
@@ -94,16 +106,16 @@
       </div>
 
       <article class="step-block" id="passo-windows">
-        <h3>Windows — instalação</h3>
+        <h3>Windows</h3>
 
         <div class="step">
           <span class="n">1</span>
           <div>
-            <h4>Instale os programas base</h4>
+            <h4>Programas base</h4>
             <ul>
-              <li><a href="https://www.python.org/downloads/" target="_blank" rel="noopener">Python 3.11+</a> — na instalação, marque <strong>Add python.exe to PATH</strong>.</li>
-              <li><a href="https://nodejs.org" target="_blank" rel="noopener">Node.js LTS</a> — Next até o fim.</li>
-              <li><a href="https://ollama.com/download" target="_blank" rel="noopener">Ollama</a> — instale e abra uma vez.</li>
+              <li><a href="https://www.python.org/downloads/" target="_blank" rel="noopener">Python 3.11+</a> — marque <strong>Add python.exe to PATH</strong>.</li>
+              <li><a href="https://nodejs.org" target="_blank" rel="noopener">Node.js LTS</a></li>
+              <li><a href="https://ollama.com/download" target="_blank" rel="noopener">Ollama</a> — abra uma vez após instalar.</li>
             </ul>
           </div>
         </div>
@@ -111,39 +123,40 @@
         <div class="step">
           <span class="n">2</span>
           <div>
-            <h4>Baixe o modelo de IA</h4>
-            <p>Abra o <strong>Prompt de Comando</strong> ou PowerShell e rode:</p>
+            <h4>Modelo de IA</h4>
+            <p>No Prompt de Comando ou PowerShell:</p>
             <pre><code>ollama pull qwen3:4b</code></pre>
-            <p class="hint">Em PC fraco, use <code>ollama pull qwen2.5:3b</code>.</p>
+            <p class="hint">PC mais fraco: <code>ollama pull qwen2.5:3b</code>.</p>
           </div>
         </div>
 
         <div class="step">
           <span class="n">3</span>
           <div>
-            <h4>Receba a pasta do Jarvis</h4>
-            <p>Pendrive, e-mail ou release privada do dono. Extraia o ZIP numa pasta simples, por exemplo:</p>
-            <pre><code>C:\Jarvis</code></pre>
+            <h4>Receba o projeto</h4>
+            <p>
+              Coloque a pasta do Jarvis num caminho simples, por exemplo <code>C:\Jarvis</code>.
+              Tem que existir <code>iniciar.bat</code> e <code>instalar.bat</code> dentro dela.
+            </p>
           </div>
         </div>
 
         <div class="step">
           <span class="n">4</span>
           <div>
-            <h4>Instale as dependências</h4>
-            <p>Abra a pasta do Jarvis e dê dois cliques em:</p>
+            <h4>Preparar o ambiente</h4>
+            <p>Dois cliques em:</p>
             <pre><code>instalar.bat</code></pre>
-            <p>Espere terminar sem fechar a janela preta.</p>
+            <p>Cria o ambiente Python e instala as dependências. Espere terminar.</p>
           </div>
         </div>
 
         <div class="step">
           <span class="n">5</span>
           <div>
-            <h4>Abra o Jarvis</h4>
-            <p>Dois cliques em:</p>
+            <h4>Abrir o Jarvis</h4>
             <pre><code>iniciar.bat</code></pre>
-            <p>Na HUD: permita o microfone se o navegador pedir. Pronto.</p>
+            <p>Permita o microfone se pedir. A HUD roda local neste PC.</p>
           </div>
         </div>
 
@@ -151,22 +164,22 @@
           <span class="n">6</span>
           <div>
             <h4>Sites (opcional)</h4>
-            <p>Na HUD → <strong>Configurações → Sites</strong> → nome + URL → <strong>Adicionar</strong> → <strong>Analisar com IA</strong>.</p>
+            <p>Configurações → <strong>Sites</strong> → nome + URL → Adicionar → <strong>Analisar com IA</strong>.</p>
           </div>
         </div>
       </article>
 
       <article class="step-block" id="passo-mac">
-        <h3>Mac — instalação</h3>
+        <h3>Mac</h3>
 
         <div class="step">
           <span class="n">1</span>
           <div>
-            <h4>Instale os programas base</h4>
+            <h4>Programas base</h4>
             <ul>
-              <li>Python 3.11+ (pelo site python.org ou <code>brew install python</code>)</li>
+              <li>Python 3.11+ (python.org ou <code>brew install python</code>)</li>
               <li><a href="https://nodejs.org" target="_blank" rel="noopener">Node.js LTS</a></li>
-              <li><a href="https://ollama.com/download" target="_blank" rel="noopener">Ollama</a> — abra o app uma vez</li>
+              <li><a href="https://ollama.com/download" target="_blank" rel="noopener">Ollama</a></li>
             </ul>
           </div>
         </div>
@@ -174,31 +187,31 @@
         <div class="step">
           <span class="n">2</span>
           <div>
-            <h4>Baixe o modelo de IA</h4>
-            <p>Abra o <strong>Terminal</strong> (Spotlight → digite Terminal) e rode:</p>
+            <h4>Modelo de IA</h4>
+            <p>No Terminal:</p>
             <pre><code>ollama pull qwen3:4b</code></pre>
-            <p class="hint">Mac Intel mais fraco: <code>ollama pull qwen2.5:3b</code>.</p>
           </div>
         </div>
 
         <div class="step">
           <span class="n">3</span>
           <div>
-            <h4>Receba a pasta do Jarvis</h4>
-            <p>Extraia o ZIP, por exemplo em:</p>
-            <pre><code>~/Desktop/Jarvis</code></pre>
+            <h4>Receba o projeto</h4>
+            <p>
+              A pasta do Jarvis (com <code>iniciar.sh</code>) deve estar no Mac,
+              por exemplo em <code>~/Desktop/Jarvis</code>. Não use um “instalador zip” deste site.
+            </p>
           </div>
         </div>
 
         <div class="step">
           <span class="n">4</span>
           <div>
-            <h4>Como abrir o Terminal na pasta</h4>
+            <h4>Abrir o Terminal na pasta</h4>
             <ol class="mini">
-              <li>Abra o <strong>Finder</strong> na pasta do Jarvis.</li>
-              <li>Menu <strong>Finder → Serviços → Nova janela do Terminal na pasta</strong>
-                (ou arraste a pasta para o ícone do Terminal no Dock).</li>
-              <li>Ou no Terminal: <code>cd</code>, espaço, arraste a pasta e Enter.</li>
+              <li>Spotlight (Cmd+Espaço) → Terminal</li>
+              <li>Ou no Finder: arraste a pasta do Jarvis para o ícone do Terminal</li>
+              <li>Confirme com <code>pwd</code> e <code>ls</code> que vê <code>iniciar.sh</code></li>
             </ol>
           </div>
         </div>
@@ -206,12 +219,11 @@
         <div class="step">
           <span class="n">5</span>
           <div>
-            <h4>Instale e abra</h4>
-            <p>No Terminal, na pasta do Jarvis:</p>
+            <h4>Instalar e abrir</h4>
             <pre><code>chmod +x iniciar.sh iniciar.command
 ./iniciar.sh</code></pre>
-            <p>Na primeira vez ele cria o ambiente e instala os pacotes sozinho. Depois abre a HUD.</p>
-            <p class="hint">Alternativa: dois cliques em <code>iniciar.command</code> no Finder.</p>
+            <p>Na primeira vez cria o ambiente e instala os pacotes. Depois sobe a HUD.</p>
+            <p class="hint">Ou dois cliques em <code>iniciar.command</code>.</p>
           </div>
         </div>
 
@@ -219,8 +231,7 @@
           <span class="n">6</span>
           <div>
             <h4>Sites (opcional)</h4>
-            <p>Na HUD → <strong>Sites</strong> → nome + URL → Adicionar → <strong>Analisar com IA</strong>.
-            Tudo fica no Mac dele — o PC do dono não precisa estar ligado.</p>
+            <p>HUD → Sites → Adicionar → Analisar com IA. Tudo local neste Mac.</p>
           </div>
         </div>
       </article>
@@ -228,50 +239,52 @@
 
     <section class="panel locked-only" id="atualizar" data-needs-key>
       <h2>Atualizar depois</h2>
-      <p class="intro-steps">Serve para Windows e Mac. Não precisa do PC do dono ligado.</p>
+      <p class="intro-steps">
+        Com o projeto já na máquina: use a <strong>chave de atualização</strong> no app
+        (é outra chave, não a do site). O dono não precisa estar online.
+      </p>
 
       <div class="step">
         <span class="n">1</span>
         <div>
-          <h4>Pegue a chave de atualização</h4>
-          <p>É um token GitHub (só leitura) que o dono te passa. É <strong>outra</strong> chave, diferente da chave deste site.</p>
+          <h4>Chave de atualização</h4>
+          <p>Token GitHub (leitura) que o dono te envia.</p>
         </div>
       </div>
-
       <div class="step">
         <span class="n">2</span>
         <div>
-          <h4>Cole no Jarvis</h4>
-          <p>Abra o Jarvis → <strong>Configurações → Sistema</strong> → campo da chave → <strong>Salvar chave</strong>.</p>
+          <h4>Colar no Jarvis</h4>
+          <p>Configurações → <strong>Sistema</strong> → salvar chave.</p>
         </div>
       </div>
-
       <div class="step">
         <span class="n">3</span>
         <div>
-          <h4>Atualizar</h4>
-          <p>Clique em <strong>Atualizar Jarvis</strong>. O app baixa a release, troca os arquivos e <strong>preserva</strong> seus dados e sites.</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <span class="n">4</span>
-        <div>
-          <h4>Reinicie</h4>
-          <p>Windows: <code>iniciar.bat</code> · Mac: <code>./iniciar.sh</code></p>
+          <h4>Atualizar Jarvis</h4>
+          <p>Botão <strong>Atualizar Jarvis</strong>. Preserva dados e sites. Reinicie com <code>iniciar.bat</code> ou <code>./iniciar.sh</code>.</p>
         </div>
       </div>
 
       <p class="note">
-        URL deste guia: <a href="https://pietrocaldassilva.github.io/jarvis-site/">pietrocaldassilva.github.io/jarvis-site</a>
-        — não use <code>…/jarvis/</code> (dá 404; o código é privado).
+        Site do guia:
+        <a href="https://pietrocaldassilva.github.io/jarvis-site/">pietrocaldassilva.github.io/jarvis-site</a>
+        · <code>…/jarvis/</code> dá 404 (repo privado).
       </p>
     </section>
   </main>
 
   <footer>
-    <p>JARVIS · local · código privado · este site é só o guia</p>
+    <p>JARVIS · local · projeto privado · este site é guia + assistente, não instalador ZIP</p>
   </footer>
+
+  <div id="assistRoot"></div>
   <script src="app.js"></script>
+  <script src="assistente.js"></script>
+  <script>
+    document.getElementById("btnOpenAssist")?.addEventListener("click", () => {
+      document.getElementById("assistOpen")?.click();
+    });
+  </script>
 </body>
 </html>
