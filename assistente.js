@@ -9,14 +9,19 @@
         "Olá! Sou o assistente do guia Jarvis. Posso te levar na instalação (Windows ou Mac), explicar o que é a chave, Sites e atualização. O que você precisa?",
     },
     {
-      keys: ["zip", "baixar zip", "download zip", "arquivo zip", "extrair zip"],
+      keys: ["zip", "baixar zip", "download zip", "arquivo zip", "extrair zip", "pacote"],
       reply:
-        "O Jarvis **não se instala baixando um .zip neste site**. O site só é o guia. Você recebe o **projeto** (pasta completa do Jarvis) do dono — por exemplo clone do GitHub privado ou a pasta copiada — e dentro dela roda `instalar.bat` (Windows) ou `./iniciar.sh` (Mac).",
+        "Sim — pelo site: desbloqueie → cole a chave de instalação → **Baixar pacote agora** (ou **Instalador automático**). Depois: Windows `instalar.bat` → `iniciar.bat` · Mac `./iniciar.sh`. Também precisa de Python, Node e Ollama no PC.",
     },
     {
-      keys: ["como instalar", "instalar", "instalacao", "instalação", "passo a passo", "comeco", "começo"],
+      keys: ["como instalar", "instalar", "instalacao", "instalação", "passo a passo", "comeco", "começo", "download"],
       reply:
-        "Resumo: (1) Python + Node.js + Ollama no PC; (2) `ollama pull qwen3:4b`; (3) receber a **pasta do projeto** do dono (não é zip deste site); (4) Windows: `instalar.bat` → `iniciar.bat` · Mac: `./iniciar.sh`. Quer o detalhe de Windows ou de Mac?",
+        "1) Chave do site para liberar o instalador. 2) Chave de instalação (token GitHub). 3) Baixar pacote ou instalador automático. 4) Python + Node + Ollama + `ollama pull qwen3:4b`. 5) `instalar.bat`/`iniciar.bat` ou `./iniciar.sh`. Quer Windows ou Mac?",
+    },
+    {
+      keys: ["chave instalacao", "chave instalação", "token github", "ghp", "github_pat"],
+      reply:
+        "A chave de instalação é o token GitHub (leitura no repo privado) que o dono te envia. Cole em Download no site para baixar o pacote. Depois você pode salvar a mesma chave em Configurações → Sistema no app para atualizar.",
     },
     {
       keys: ["windows", "win", "pc"],
@@ -82,10 +87,10 @@
 
   const chips = [
     ["Como instalar?", "como instalar"],
-    ["Não é ZIP?", "zip"],
+    ["Baixar pacote", "download"],
     ["Windows", "windows"],
     ["Mac", "mac"],
-    ["Chaves", "chave"],
+    ["Chaves", "chave instalação"],
     ["Atualizar", "atualizar"],
     ["Sites", "sites"],
     ["Erro", "erro"],
@@ -185,7 +190,7 @@
     btnOpen.setAttribute("aria-expanded", "true");
     if (!log.childElementCount) {
       bubble(
-        "Olá! Posso ajudar na instalação. Importante: o Jarvis não se instala por .zip neste site — você recebe o projeto (pasta) e roda os scripts. Em que posso ajudar?",
+        "Olá! Este site instala o Jarvis: desbloqueie, cole a chave de instalação e baixe o pacote (ou o instalador automático). Em que posso ajudar?",
         "bot"
       );
     }

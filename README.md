@@ -1,9 +1,9 @@
-﻿# Jarvis — site
+﻿# Jarvis — site instalador
 
-Guia público + assistente. Sem código-fonte.
+URL: https://pietrocaldassilva.github.io/jarvis-site/
 
-**URL:** https://pietrocaldassilva.github.io/jarvis-site/
+1. Chave do site: `jarvis-acesso`
+2. Chave de instalação (token GitHub) → Baixar pacote ou instalador automático
+3. `instalar.bat` / `./iniciar.sh`
 
-Chave do guia: `jarvis-acesso`
-
-Instalação = pasta do projeto (não ZIP neste site).
+Código-fonte permanece privado.
