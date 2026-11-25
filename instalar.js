@@ -1,5 +1,6 @@
 (() => {
   const REPO = "pietrocaldassilva/jarvis";
+  const FALLBACK_TAG = "v1.0.0-studio";
   const TOKEN_KEY = "jarvis_install_token_v1";
 
   const osEl = document.getElementById("installOs");
@@ -91,6 +92,17 @@
     return r.json();
   }
 
+  async function buscarRelease(token) {
+    try {
+      return await apiJson(`/repos/${REPO}/releases/latest`, token);
+    } catch (e) {
+      if (e && (e.status === 404 || e.status === 0)) {
+        return await apiJson(`/repos/${REPO}/releases/tags/${FALLBACK_TAG}`, token);
+      }
+      throw e;
+    }
+  }
+
   function escolherAsset(assets) {
     const want = plat() === "mac" ? ["mac", "darwin", "osx"] : ["windows", "win"];
     const zips = (assets || []).filter((a) => String(a.name || "").toLowerCase().endsWith(".zip"));
@@ -114,13 +126,13 @@
       return "Token inválido ou expirado. Gere outro no GitHub → Settings → Developer settings → Tokens.";
     }
     if (st === 403) {
-      return "Token sem permissão. No fine-grained: repo jarvis + Contents: Read (e acesso a Releases).";
+      return "Token sem permissão. Fine-grained: repo jarvis + Contents: Read.";
     }
     if (st === 404) {
       return (
         "GitHub respondeu «não encontrado». Quase sempre é token sem acesso ao repo privado. " +
-        "Fine-grained: Resource owner = você, Repository = pietrocaldassilva/jarvis, " +
-        "Permissions → Contents: Read. Depois use «Instalador automático»."
+        "Fine-grained: Repository = pietrocaldassilva/jarvis, Permissions → Contents: Read. " +
+        "Depois use «Instalador automático»."
       );
     }
     if (st === 0) {
@@ -139,7 +151,7 @@
     setMsg("Testando token no GitHub…");
     try {
       const repo = await apiJson(`/repos/${REPO}`, token);
-      const rel = await apiJson(`/repos/${REPO}/releases/latest`, token);
+      const rel = await buscarRelease(token);
       const n = (rel.assets || []).length;
       setMsg(
         `OK: acesso a ${repo.full_name}. Release ${rel.tag_name} com ${n} arquivo(s). Pode baixar o instalador automático.`,
@@ -161,7 +173,7 @@
     setProgress(5, "Consultando release…");
     setMsg("Baixando o pacote…");
     try {
-      const meta = await apiJson(`/repos/${REPO}/releases/latest`, token);
+      const meta = await buscarRelease(token);
       const asset = escolherAsset(meta.assets || []);
       if (!asset) {
         const err = new Error("Sem pacote");
@@ -170,7 +182,6 @@
       }
 
       setProgress(15, `Baixando ${asset.name}…`);
-      // API asset (não browser_download_url) — privado exige header.
       let fileRes;
       try {
         fileRes = await fetch(asset.url, {
@@ -215,7 +226,6 @@
         setProgress(90, "Finalizando…");
       }
 
-      // ZIP vazio/HTML de erro
       if (blob.size < 1000) {
         const err = new Error("arquivo pequeno");
         err.status = 0;
@@ -241,32 +251,69 @@
     }
   }
 
+  function escPsSingle(token) {
+    return String(token).replace(/'/g, "''");
+  }
+
+  function escBashSingle(token) {
+    return String(token).replace(/'/g, `'\\''`);
+  }
+
   function scriptWindows(token) {
-    const t = token.replace(/'/g, "''");
-    return `# Instalador Jarvis (Windows) — gerado pelo site
+    const t = escPsSingle(token);
+    // Híbrido .bat + PowerShell (um arquivo só). curl.exe evita bug de Authorization no redirect.
+    return `@echo off
+chcp 65001 >nul
+setlocal
+echo === Jarvis instalador ===
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-Expression ((Get-Content -LiteralPath '%~f0' -Raw -Encoding UTF8) -split '___PS___',2)[1]"
+if errorlevel 1 (
+  echo.
+  echo [ERRO] Instalacao falhou. Token precisa de Contents: Read no repo privado jarvis.
+  pause
+  exit /b 1
+)
+echo.
+echo Pronto. Abra a pasta Jarvis do seu usuario e rode instalar.bat
+pause
+exit /b 0
+___PS___
 $ErrorActionPreference = 'Stop'
 $Token = '${t}'
 $Repo = '${REPO}'
+$Tag = '${FALLBACK_TAG}'
 $Dest = Join-Path $env:USERPROFILE 'Jarvis'
 $Tmp = Join-Path $env:TEMP ('jarvis-setup-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $Tmp | Out-Null
-Write-Host '=== Jarvis instalador ===' -ForegroundColor Cyan
-$headers = @{
+$hdr = @{
   Authorization = "Bearer $Token"
   Accept = 'application/vnd.github+json'
   'X-GitHub-Api-Version' = '2022-11-28'
 }
 try {
-  $rel = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/$Repo/releases/latest"
+  $rel = Invoke-RestMethod -Headers $hdr -Uri "https://api.github.com/repos/$Repo/releases/latest"
 } catch {
-  throw "Nao achei a release. Confira o token (Contents Read no repo privado jarvis). Detalhe: $_"
+  try {
+    $rel = Invoke-RestMethod -Headers $hdr -Uri "https://api.github.com/repos/$Repo/releases/tags/$Tag"
+  } catch {
+    throw "Nao achei a release. Confira o token (Contents: Read no repo privado jarvis). Detalhe: $_"
+  }
 }
 $asset = $rel.assets | Where-Object { $_.name -match 'Windows' -and $_.name -like '*.zip' } | Select-Object -First 1
 if (-not $asset) { $asset = $rel.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1 }
 if (-not $asset) { throw 'Nenhum pacote ZIP na release.' }
 $zip = Join-Path $Tmp 'Jarvis.zip'
 Write-Host ("Baixando " + $asset.name + "...")
-Invoke-WebRequest -Headers @{ Authorization = "Bearer $Token"; Accept = 'application/octet-stream' } -Uri $asset.url -OutFile $zip
+$curl = Get-Command curl.exe -ErrorAction SilentlyContinue
+if ($curl) {
+  & curl.exe -fsSL -H "Authorization: Bearer $Token" -H "Accept: application/octet-stream" -o $zip $asset.url
+  if ($LASTEXITCODE -ne 0) { throw "curl falhou com codigo $LASTEXITCODE" }
+} else {
+  Invoke-WebRequest -Headers @{ Authorization = "Bearer $Token"; Accept = 'application/octet-stream' } -Uri $asset.url -OutFile $zip
+}
+if (-not (Test-Path $zip) -or ((Get-Item $zip).Length -lt 1000)) {
+  throw 'Download falhou (arquivo vazio). Confira o token Contents: Read.'
+}
 $out = Join-Path $Tmp 'out'
 Expand-Archive -Force -Path $zip -DestinationPath $out
 $src = Get-ChildItem $out -Directory | Select-Object -First 1
@@ -275,53 +322,71 @@ New-Item -ItemType Directory -Force -Path $Dest | Out-Null
 Copy-Item -Path (Join-Path $src.FullName '*') -Destination $Dest -Recurse -Force
 Write-Host ''
 Write-Host ("Projeto em " + $Dest) -ForegroundColor Green
-Write-Host 'Depois: Python+Node+Ollama, depois instalar.bat e iniciar.bat'
+Write-Host 'Depois: rode instalar.bat e iniciar.bat nesta pasta.'
 Start-Process explorer.exe $Dest
 `;
   }
 
   function scriptMac(token) {
-    const t = token.replace(/'/g, `'\\''`);
+    const t = escBashSingle(token);
     return `#!/bin/bash
 set -euo pipefail
 TOKEN='${t}'
 REPO='${REPO}'
+TAG='${FALLBACK_TAG}'
 DEST="$HOME/Jarvis"
 TMP="$(mktemp -d)"
+cleanup() { rm -rf "$TMP"; }
+trap cleanup EXIT
 echo "=== Jarvis instalador (Mac) ==="
-CODE=$(curl -sL -o "$TMP/rel.json" -w "%{http_code}" -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \\
-  "https://api.github.com/repos/$REPO/releases/latest")
+CODE=$(curl -sS -o "$TMP/rel.json" -w "%{http_code}" -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \\
+  "https://api.github.com/repos/$REPO/releases/latest" || true)
+if [ "$CODE" != "200" ]; then
+  CODE=$(curl -sS -o "$TMP/rel.json" -w "%{http_code}" -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \\
+    "https://api.github.com/repos/$REPO/releases/tags/$TAG" || true)
+fi
 if [ "$CODE" != "200" ]; then
   echo "GitHub HTTP $CODE — token sem acesso ao repo privado ou release inexistente."
-  echo "Fine-grained: repo jarvis + Contents Read."
+  echo "Fine-grained: repo jarvis + Contents: Read."
   exit 1
 fi
-python3 - <<PY
-import json
-j=json.load(open("$TMP/rel.json"))
-assets=j.get("assets") or []
-pick=next((a for a in assets if str(a.get("name","")).lower().endswith(".zip") and "mac" in str(a.get("name","")).lower()), None)
+export JARVIS_TMP="$TMP"
+python3 - <<'PY'
+import json, os, pathlib
+tmp = pathlib.Path(os.environ["JARVIS_TMP"])
+j = json.loads((tmp / "rel.json").read_text(encoding="utf-8"))
+assets = j.get("assets") or []
+pick = next((a for a in assets if str(a.get("name","")).lower().endswith(".zip") and "mac" in str(a.get("name","")).lower()), None)
 if not pick:
-    pick=next((a for a in assets if str(a.get("name","")).lower().endswith(".zip")), None)
+    pick = next((a for a in assets if str(a.get("name","")).lower().endswith(".zip")), None)
 if not pick:
     raise SystemExit("Sem pacote na release")
-open("$TMP/url.txt","w").write(pick["url"])
-open("$TMP/name.txt","w").write(pick.get("name") or "Jarvis.zip")
+(tmp / "url.txt").write_text(pick["url"], encoding="utf-8")
+(tmp / "name.txt").write_text(pick.get("name") or "Jarvis.zip", encoding="utf-8")
 PY
 URL=$(cat "$TMP/url.txt")
 NAME=$(cat "$TMP/name.txt")
 echo "Baixando $NAME..."
-curl -sL -H "Authorization: Bearer $TOKEN" -H "Accept: application/octet-stream" "$URL" -o "$TMP/Jarvis.zip"
+curl -fsSL -H "Authorization: Bearer $TOKEN" -H "Accept: application/octet-stream" "$URL" -o "$TMP/Jarvis.zip"
+SIZE=$(wc -c < "$TMP/Jarvis.zip" | tr -d ' ')
+if [ "\${SIZE:-0}" -lt 1000 ]; then
+  echo "Download falhou (arquivo vazio). Confira o token."
+  exit 1
+fi
 mkdir -p "$TMP/out"
 unzip -q "$TMP/Jarvis.zip" -d "$TMP/out"
 SRC=$(find "$TMP/out" -mindepth 1 -maxdepth 1 -type d | head -1)
 [ -n "\${SRC:-}" ] || SRC="$TMP/out"
 mkdir -p "$DEST"
-rsync -a "$SRC"/ "$DEST"/
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a "$SRC"/ "$DEST"/
+else
+  cp -R "$SRC"/. "$DEST"/
+fi
 chmod +x "$DEST/iniciar.sh" "$DEST/iniciar.command" 2>/dev/null || true
 echo
 echo "Projeto em $DEST"
-echo "Depois: Python + Node + Ollama + ./iniciar.sh"
+echo "Depois: Python + Node + Ollama, então: cd ~/Jarvis && ./iniciar.sh"
 open "$DEST"
 `;
   }
@@ -335,35 +400,20 @@ open "$DEST"
     sessionStorage.setItem(TOKEN_KEY, token);
     if (plat() === "mac") {
       saveBlob(new Blob([scriptMac(token)], { type: "text/plain" }), "instalar-jarvis.command");
-      if (!silencioso) {
-        setMsg("Baixou instalar-jarvis.command — Finder: botão direito → Abrir.", true);
-      } else {
-        setMsg(
-          "Download direto falhou no navegador (normal). Baixei instalar-jarvis.command — abra pelo Finder.",
-          true
-        );
-      }
+      setMsg(
+        silencioso
+          ? "Download direto falhou no navegador (normal). Baixei instalar-jarvis.command — no Finder: botão direito → Abrir."
+          : "Baixou instalar-jarvis.command — Finder: botão direito → Abrir (não dê dois cliques na primeira vez).",
+        true
+      );
     } else {
-      const ps1 = scriptWindows(token);
-      const bat =
-        "@echo off\r\n" +
-        "powershell -NoProfile -ExecutionPolicy Bypass -File \"%~dp0instalar-jarvis.ps1\"\r\n" +
-        "if errorlevel 1 pause\r\n";
-      saveBlob(new Blob([ps1], { type: "text/plain" }), "instalar-jarvis.ps1");
-      setTimeout(() => {
-        saveBlob(new Blob([bat], { type: "application/octet-stream" }), "instalar-jarvis.bat");
-      }, 400);
-      if (!silencioso) {
-        setMsg(
-          "Baixou instalar-jarvis.ps1 e .bat — rode o .bat. Destino: pasta Jarvis no seu usuário.",
-          true
-        );
-      } else {
-        setMsg(
-          "Download direto falhou no navegador (normal com repo privado). Baixei o instalador automático (.bat) — rode ele.",
-          true
-        );
-      }
+      saveBlob(new Blob([scriptWindows(token)], { type: "application/octet-stream" }), "instalar-jarvis.bat");
+      setMsg(
+        silencioso
+          ? "Download direto falhou no navegador (normal com repo privado). Baixei instalar-jarvis.bat — rode ele."
+          : "Baixou instalar-jarvis.bat — rode o arquivo. Destino: pasta Jarvis no seu usuário.",
+        true
+      );
     }
   }
 
